@@ -1,122 +1,354 @@
-Markdown# 🚀 AWS EC2 Fleet Monitoring & Automated Reporting System
+# 🚀 AWS EC2 Fleet Monitoring & Automated Reporting System
 
-> Transforming manual cloud operations into a fully automated infrastructure monitoring pipeline using AWS CLI, Bash, Linux, Ansible, Jinja2 templates, and Gmail SMTP.
+> Automated AWS infrastructure monitoring solution that discovers EC2 instances, provisions access, collects health metrics, generates HTML dashboards, and delivers scheduled reports via email.
 
-![AWS](https://img.shields.io/badge/AWS-EC2-orange?style=for-the-badge&logo=amazonaws)
-![Ansible](https://img.shields.io/badge/Ansible-Automation-red?style=for-the-badge&logo=ansible)
-![Linux](https://img.shields.io/badge/Linux-Ubuntu-yellow?style=for-the-badge&logo=linux)
-![Bash](https://img.shields.io/badge/Bash-Automation-green?style=for-the-badge&logo=gnu-bash)
+![AWS](https://img.shields.io/badge/AWS-EC2-orange?style=for-the-badge\&logo=amazonaws)
+![Ansible](https://img.shields.io/badge/Ansible-Automation-red?style=for-the-badge\&logo=ansible)
+![Linux](https://img.shields.io/badge/Linux-Ubuntu-yellow?style=for-the-badge\&logo=linux)
+![Bash](https://img.shields.io/badge/Bash-Automation-green?style=for-the-badge\&logo=gnu-bash)
 ![DevOps](https://img.shields.io/badge/DevOps-Infrastructure-blue?style=for-the-badge)
 
 ---
 
-## 🎯 Project Motivation & Design Philosophy
+## 📖 Overview
 
-Managing a handful of EC2 instances manually is trivial. Managing **50 to 100+ instances** manually is an operational nightmare. Tasks like tracking dynamic IP addresses, updating inventory sheets, provisioning SSH keys, logging into boxes to run health checks, and aggregating report cards quickly become error-prone, unscalable, and inefficient.
+Managing dozens of cloud instances manually becomes increasingly difficult as infrastructure scales. Tasks such as maintaining inventories, tracking IP addresses, collecting performance metrics, and generating reports consume valuable engineering time.
 
-The core philosophy of this project is simple:
-> **"If a task is performed repeatedly, it must be automated so engineers can focus on solving high-value problems."**
+This project automates the entire operational workflow:
 
-This project establishes a self-contained, end-to-end monitoring pipeline that eliminates human intervention across the entire fleet management lifecycle.
+* Discover running EC2 instances dynamically
+* Standardize instance naming conventions
+* Configure passwordless SSH access
+* Collect CPU, Memory, and Disk metrics using Ansible
+* Generate HTML health reports using Jinja2
+* Send automated reports through Gmail SMTP
+* Schedule recurring executions via Cron
+
+The result is a fully automated monitoring pipeline requiring minimal human intervention.
 
 ---
 
-## 🏗️ Architecture & Workflow
+## ✨ Key Features
 
-The system follows a linear pipeline architecture, taking target instances from raw AWS deployment to complete reporting metrics.
+### 🔄 Automated EC2 Naming
+
+Automatically renames newly launched instances into a predictable format:
 
 ```text
-       ┌───────────────────────────────┐
-       │     AWS EC2 Instance Fleet    │  ◄── Instances launched as "Production"
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Automated Instance Renamer  │  ◄── Bash + AWS CLI (production-1, -2...)
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │  Dynamic Inventory Generator  │  ◄── Automatically queries public IPs
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Passwordless SSH Provision  │  ◄── Disseminates keys via ssh-copy-id
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │  Ansible Core Control Node    │  ◄── Executes sysstat, mpstat, free, df
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │   Jinja2 HTML Report Render   │  ◄── Builds dashboard with health indicators
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       ┌───────────────────────────────┐
-       │      Gmail SMTP Gateway       │  ◄── Dispatches via Google App Passwords
-       └───────────────┬───────────────┘
-                       │
-                       ▼
-       📧 Automated Email Delivered (Hourly/Daily via Cron)
-⚡ Key FeaturesEC2 Naming Standardization: Automatically detects instances launched with default or identical labels and transitions them into a clean, serialized standard (production-1, production-2, etc.).Zero-Maintenance Dynamic Inventory: Uses the AWS CLI backend to query state metadata on the fly, completely eliminating the manual copy-pasting of changing target IP addresses.Secure Unattended Execution: Sets up automated passwordless SSH key delivery so the orchestrator runs entirely without prompt-blocking bottlenecks.Tri-Core Metric Collection: Pulls deep OS stats directly through foundational Linux utilities to measure performance across critical boundaries:🔥 CPU Usage: Real-time utilization via mpstat.📥 Memory Usage: RAM consumption footprints via free.📦 Disk Usage: Root partition block space allocations via df.Data-to-Information Dashboards: Transforms raw numbers into visual asset metrics featuring health status badges, visual usage bars, and structural asset layouts via Jinja2 HTML rendering.Resilient Delivery Engine: Ships completed execution sheets directly to infrastructure teams over secure SMTP pathways utilizing Cron scheduling hooks.🛠️ Technology StackCategoryTechnologies UsedCloud ProviderAWS (EC2 Infrastructure Management)Configuration EngineAnsible CoreScripting AutomationBash, AWS CLI ToolingTarget OSLinux UbuntuTelemetry AggregatorsLinux sysstat SuiteIdentity ManagementSSH Key Pairs (ssh-copy-id)Template CompilerJinja2 EngineNotification LayerGmail SMTP Network (App Passwords)Task AutomationLinux Vixie Cron📂 Project StructurePlaintextaws-ec2-monitoring/
+production-1
+production-2
+production-3
+...
+```
+
+### 🌐 Dynamic Inventory Generation
+
+Eliminates manual inventory management by querying AWS APIs directly.
+
+### 🔐 Passwordless SSH Provisioning
+
+Distributes SSH keys automatically for unattended Ansible execution.
+
+### 📊 Infrastructure Health Monitoring
+
+Collects critical system metrics:
+
+* CPU Utilization (`mpstat`)
+* Memory Utilization (`free`)
+* Disk Utilization (`df`)
+
+### 📧 Automated Reporting
+
+* HTML Dashboard Generation
+* Health Status Indicators
+* Scheduled Email Delivery
+* Gmail SMTP Integration
+
+### ⏰ Scheduled Execution
+
+Supports hourly, daily, or custom monitoring intervals using Cron.
+
+---
+
+## 🏗️ Architecture
+
+```text
+AWS EC2 Fleet
+      │
+      ▼
+Instance Renaming
+      │
+      ▼
+Dynamic Inventory Generation
+      │
+      ▼
+SSH Key Provisioning
+      │
+      ▼
+Ansible Metric Collection
+      │
+      ▼
+Jinja2 HTML Report Generation
+      │
+      ▼
+SMTP Email Delivery
+      │
+      ▼
+Engineering Team Inbox
+```
+
+---
+
+## 📂 Project Structure
+
+```text
+aws-ec2-monitoring/
 ├── AUTHORS
 ├── README.md
-├── collect_metrics.yaml        # Ansible task playbook for server stats
-├── send_report.yaml            # Ansible task playbook for SMTP processing
-├── playbook.yaml               # Master playbook chaining the execution steps
-├── hosts.yaml                  # Target inventory configuration file
+├── collect_metrics.yaml
+├── send_report.yaml
+├── playbook.yaml
+├── hosts.yaml
 ├── group_vars/
-│   └── all.yml                 # Global configuration variables and mail configs
+│   └── all.yml
 ├── scripts/
-│   ├── dyna_inven.sh           # Queries AWS for IP mapping & updates inventory
-│   ├── pass_less-auth.sh       # Deploys SSH public keys to target instances
-│   └── rename_instance.sh      # Re-indexes non-ordered cloud instance names
+│   ├── dyna_inven.sh
+│   ├── pass_less-auth.sh
+│   └── rename_instance.sh
 └── templates/
-    └── ec2_report.html.j2      # Jinja2 layout for compiled email metrics
-⚙️ Core Automation Engineering Deep-DiveStage 1: Standardizing Infrastructure NamingWhen multiple EC2 instances are spun up simultaneously, they often inherit ambiguous or duplicate tags. The following snippet loops through active resources filtering for generic "Production" labels and builds sequential naming tracks:Bash#!/bin/bash
-# rename_instance.sh
-COUNT=1
+    └── ec2_report.html.j2
+```
 
-for INSTANCE_ID in $(aws ec2 describe-instances \
-    --filters "Name=tag:Name,Values=Production" "Name=instance-state-name,Values=running" \
-    --query "Reservations[*].Instances[*].InstanceId" \
-    --output text)
-do
-    NEW_NAME="production-${COUNT}"
-    
-    aws ec2 create-tags \
-        --resources "$INSTANCE_ID" \
-        --tags Key=Name,Value="$NEW_NAME"
-        
-    ((COUNT++))
-done
-Stage 2: Dynamic IP DiscoveryInstead of parsing cloud instances manually, this discovery query extracts the required dynamic variables directly from the active AWS endpoint:Bash#!/bin/bash
-# dyna_inven.sh
-aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=production-*" "Name=instance-state-name,Values=running" \
-  --query "Reservations[*].Instances[*].[Tags[?Key=='Name'].Value|[0],PublicIpAddress]" \
-  --output text
-Stage 3: Automated Key InjectionTo run tasks entirely unattended, SSH pathways are authorized programmatically by piping dynamic address inputs straight into target hosts:Bash#!/bin/bash
-# pass_less-auth.sh
-while read -r NAME IP; do
-    if [ ! -z "$IP" ]; then
-        ssh-copy-id -i ~/.ssh/id_rsa.pub -o StrictHostKeyChecking=no ubuntu@"$IP"
-    fi
-done < <(./dyna_inven.sh)
-🔍 Real Engineering Challenges & Root Cause InvestigationsChallenge 1: SSH Key Authentication Refusals (Permission denied (publickey))Root Cause: The Ansible controller defaults execution contextual paths to local user footprints (nishant@<IP>), causing logins to drop on generic Ubuntu EC2 setups because the default account is ubuntu.Resolution: Enforced global parameterizations inside group_vars/all.yml to normalize administrative target logins:YAMLall:
-  vars:
-    ansible_user: ubuntu
-Challenge 2: AWS Dynamic Engine Discovery Blockages (ModuleNotFoundError: No module named 'boto3')Root Cause: Transitioning execution structures toward fully automated dynamic runtime environments triggered underlying library failures within local python runtimes.Resolution: Patched dependency definitions and initialized local collection trees via galaxy:Bashpip install boto3 botocore
+---
+
+## 🛠 Technology Stack
+
+| Category       | Technologies              |
+| -------------- | ------------------------- |
+| Cloud          | AWS EC2                   |
+| Automation     | Ansible Core              |
+| Scripting      | Bash                      |
+| OS             | Ubuntu Linux              |
+| Monitoring     | sysstat, mpstat, free, df |
+| Templates      | Jinja2                    |
+| Authentication | SSH Keys                  |
+| Notifications  | Gmail SMTP                |
+| Scheduling     | Cron                      |
+
+---
+
+## 📋 Prerequisites
+
+Before running the project, ensure the following are installed:
+
+```bash
+aws --version
+ansible --version
+python3 --version
+```
+
+Required packages:
+
+```bash
+pip install boto3 botocore
 ansible-galaxy collection install amazon.aws
-Challenge 3: Template Attribute Mismatches during Jinja2 Engine CompileRoot Cause: The pipeline template processor threw fatal errors (object of type 'dict' has no attribute 'cpu') due to property discrepancies between raw Ansible system facts and target fields inside the custom layout file (vm.mem vs. vm.memory).Resolution: Standardized structural dictionaries across data collectors and aligned template hooks perfectly:Django<div class="metric-bar">
-    <span class="label">Memory Utilization:</span>
-    <span class="val">{{ vm.memory }}%</span>
-</div>
-Challenge 4: Authentication Handshake Failures on Mail ServicesRoot Cause: Standard account profile access passwords fail to validate against modern SMTP relays because providers require dedicated integration paths.Resolution: Modified secure credential routing to use Google App Passwords over port 587 using explicit TLS properties:YAMLsmtp_server: smtp.gmail.com
+sudo apt install sysstat
+```
+
+---
+
+## 🚀 Installation
+
+### Clone Repository
+
+```bash
+git clone <repository-url>
+cd aws-ec2-monitoring
+```
+
+### Configure AWS CLI
+
+```bash
+aws configure
+```
+
+### Configure Variables
+
+Update:
+
+```text
+group_vars/all.yml
+```
+
+with:
+
+```yaml
+ansible_user: ubuntu
+
+smtp_server: smtp.gmail.com
 smtp_port: 587
 smtp_use_tls: true
-🎓 Key Lessons & DevOps TakeawaysAutomation Architecture Beats Linear Scaling: Manual processes break down quickly. Designing infrastructure pipelines to handle 100+ servers takes minimal extra up-front work but saves massive operational overhead down the line.Strict Naming Conventions are Critical: Predictable naming standards allow simpler dynamic loops, cleaner inventory generation, and much easier infrastructure auditing.Bash Remains Indispensable: While configuration engines like Ansible excel at state control, plain shell scripts remain one of the fastest and most efficient tools for rapid pre-flight orchestration and AWS API queries.Actionable Reporting Matters: Collecting raw metrics is only half the battle. A true DevOps monitoring solution must process data, visualize it clearly, and route it directly to the engineering team via reliable notification pipelines (Email/SMTP).👨‍💻 AuthorNishant Bhardwaj Final Year ECE Student | National Institute of Technology (NIT), Raipur Core Focus: DevOps Automation • Cloud Architecture • Linux Systems Engineering • Infrastructure OperationsAutomating infrastructure one script at a time 🚀. If you find this architecture template helpful for your production pipelines, please consider giving this project a star!
+
+smtp_username: your-email@gmail.com
+smtp_password: your-app-password
+```
+
+---
+
+## ▶️ Usage
+
+### Step 1: Rename Instances
+
+```bash
+./scripts/rename_instance.sh
+```
+
+### Step 2: Generate Inventory
+
+```bash
+./scripts/dyna_inven.sh
+```
+
+### Step 3: Configure Passwordless Access
+
+```bash
+./scripts/pass_less-auth.sh
+```
+
+### Step 4: Execute Monitoring Pipeline
+
+```bash
+ansible-playbook playbook.yaml
+```
+
+---
+
+## 📈 Metrics Collected
+
+| Metric       | Tool   |
+| ------------ | ------ |
+| CPU Usage    | mpstat |
+| Memory Usage | free   |
+| Disk Usage   | df     |
+
+---
+
+## 📧 Automated Reporting Workflow
+
+1. Collect metrics from all EC2 instances
+2. Aggregate results on Ansible Control Node
+3. Generate HTML dashboard via Jinja2
+4. Send report through Gmail SMTP
+5. Deliver report to engineering team inbox
+
+---
+
+## 🔍 Challenges & Solutions
+
+### SSH Authentication Failures
+
+**Issue**
+
+```text
+Permission denied (publickey)
+```
+
+**Solution**
+
+```yaml
+ansible_user: ubuntu
+```
+
+---
+
+### Missing AWS Python Dependencies
+
+**Issue**
+
+```text
+ModuleNotFoundError: No module named 'boto3'
+```
+
+**Solution**
+
+```bash
+pip install boto3 botocore
+ansible-galaxy collection install amazon.aws
+```
+
+---
+
+### Jinja2 Template Errors
+
+**Issue**
+
+```text
+object of type 'dict' has no attribute 'cpu'
+```
+
+**Solution**
+
+Standardized metric dictionary structures across collection and reporting stages.
+
+---
+
+### Gmail SMTP Authentication Failures
+
+**Solution**
+
+Use Google App Passwords instead of account passwords.
+
+```yaml
+smtp_server: smtp.gmail.com
+smtp_port: 587
+smtp_use_tls: true
+```
+
+---
+
+## 📚 Key DevOps Learnings
+
+* Infrastructure should be designed for scale from day one.
+* Consistent naming conventions simplify automation.
+* Bash remains highly effective for cloud orchestration tasks.
+* Monitoring is only valuable when insights are actionable.
+* Automated reporting significantly reduces operational overhead.
+
+---
+
+## 🔮 Future Enhancements
+
+* CloudWatch integration
+* Slack/MS Teams notifications
+* Grafana dashboards
+* Auto-remediation workflows
+* Multi-region EC2 support
+* Historical metric storage with databases
+
+---
+
+## 👨‍💻 Author
+
+**Nishant Bhardwaj**
+
+Final Year ECE Student
+National Institute of Technology (NIT), Raipur
+
+**Focus Areas**
+
+* DevOps Engineering
+* Cloud Infrastructure
+* Linux Systems
+* Automation & Monitoring
+
+---
+
+## ⭐ Support
+
+If you found this project useful, consider giving it a star and sharing feedback.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
