@@ -1,0 +1,5 @@
+ # Author: Nishant Bhardwaj <nishant.bhardwaj0394@gmail.com>
+# Email: nishant.bhardwaj0394@gmail.com
+
+ - import_playbook: collect_metrics.yaml
+ - import_playbook: send_report.yaml

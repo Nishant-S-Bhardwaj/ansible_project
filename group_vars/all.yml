@@ -1,0 +1,8 @@
+ # Author: Nishant Bhardwaj <nishant.bhardwaj0394@gmail.com>
+# Email: nishant.bhardwaj0394@gmail.com
+
+smtp_server: "smtp.gmail.com"
+smtp_port: 587
+email_user: "nishant.bhardwaj0394@gmail.com"
+email_pass: ""
+alert_recipient: ""

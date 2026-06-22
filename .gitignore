@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*~
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# System files
+.DS_Store
+
+# Terraform
+.terraform/
+
+# Ansible
+# Uncomment to ignore group vars if they contain secrets
+# group_vars/

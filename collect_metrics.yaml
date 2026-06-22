@@ -1,0 +1,53 @@
+ # Author: Nishant Bhardwaj <nishant.bhardwaj0394@gmail.com>
+# Email: nishant.bhardwaj0394@gmail.com
+
+---
+- name: Collect EC2 Metrics
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    - name: Install sysstat package
+      apt:
+        name: sysstat
+        state: present
+        update_cache: true
+      when: ansible_os_family == "Debian"
+
+    - name: Get CPU usage
+      shell: |
+        mpstat 1 1 | awk '/Average/ {print 100 - $NF}'
+      register: cpu_usage
+      changed_when: false
+
+    - name: Get memory usage
+      shell: |
+        free | awk '/Mem/ {printf("%.2f", $3/$2 * 100)}'
+      register: mem_usage
+      changed_when: false
+
+    - name: Get disk usage
+      shell: |
+        df -h / | awk 'NR==2 {gsub("%",""); print $5}'
+      register: disk_usage
+      changed_when: false
+
+    - name: Display metrics
+      debug:
+        msg:
+          - "Host: {{ inventory_hostname }}"
+          - "Public IP: {{ ansible_host }}"
+          - "CPU Usage: {{ cpu_usage.stdout }}%"
+          - "Memory Usage: {{ mem_usage.stdout }}%"
+          - "Disk Usage: {{ disk_usage.stdout }}%"
+
+    - name: Store metrics as fact
+      set_fact:
+        vm_metrics:
+          hostname: "{{ inventory_hostname }}"
+          public_ip: "{{ ansible_host }}"
+          cpu: "{{ cpu_usage.stdout | float | round(2) }}"
+          memory: "{{ mem_usage.stdout | float | round(2) }}"
+          disk: "{{ disk_usage.stdout | float | round(2) }}"

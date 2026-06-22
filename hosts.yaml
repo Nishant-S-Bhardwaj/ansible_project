@@ -1,0 +1,16 @@
+ # Author: Nishant Bhardwaj <nishant.bhardwaj0394@gmail.com>
+# Email: nishant.bhardwaj0394@gmail.com
+
+all:
+  vars:
+    ansible_user: ubuntu
+
+  hosts:
+    production-1:
+      ansible_host: 34.224.213.27
+
+    production-2:
+      ansible_host: 98.84.177.6
+
+    production-3:
+      ansible_host: 98.81.60.183
